@@ -17,7 +17,7 @@ Drupal.behaviors.book_explorer = {
       control.expanded = false;
     }
     
-    $('.block-book-explorer:not(.book-explorer-processed)').each(function () {
+    $('.book-explorer').once().each(function () {
       $('.expanded', this).each(function () {
         var list_item = this;      
         $('<a href="#" class="book-explorer-toggle">&nbsp;</a>').insertBefore(this).each(function () {
@@ -43,7 +43,7 @@ Drupal.behaviors.book_explorer = {
           });
         });
       });
-    }).addClass('book-explorer-processed');
+    });
   }
 };
 

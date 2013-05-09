@@ -96,10 +96,17 @@ function book_explorer_block_book_explorer_view() {
   }  
 
   if (!empty($block['content'])) {
+    // Move block content down one level so we can wrap a div around it
+    $block['content'] = array(
+      'prefix' => array('#markup' => '<div class="book-explorer">'),
+      'build' => $block['content'],
+      'suffix' => array('#markup' => '</div>'),
+    );
+
     // Attach css and js which implements the 'explorer' behaviour
     $dir = drupal_get_path('module', 'book_explorer');
-    $block['content']['#attached']['css'] = array($dir . '/book_explorer.css');      
-    $block['content']['#attached']['js'] = array($dir . '/book_explorer.js');
+    $block['content']['build']['#attached']['css'] = array($dir . '/book_explorer.css');      
+    $block['content']['build']['#attached']['js'] = array($dir . '/book_explorer.js');
   }
   return $block;
 }
