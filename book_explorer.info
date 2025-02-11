@@ -1,4 +1,5 @@
 name = Book Explorer
 description = Collapsible Explorer-like Book menu
 dependencies[] = book
-core = 7.x
+backdrop = 1.x
+type = module

@@ -4,10 +4,10 @@
  * Implements hook_block_info().
  */
 function book_explorer_block_info() {
-  $blocks = array();  
+  $blocks = array();
   $blocks['book_explorer'] = array(
     'info' => t('Book explorer navigation'),
-    'cache' => DRUPAL_CACHE_PER_ROLE | DRUPAL_CACHE_PER_PAGE,
+    'cache' => BACKDROP_CACHE_PER_ROLE | BACKDROP_CACHE_PER_PAGE,
   );
   return $blocks;
 }
@@ -15,50 +15,41 @@ function book_explorer_block_info() {
 /**
  * Implements hook_block_configure().
  */
-function book_explorer_block_configure($delta = '') {
-  $block = array();
+function book_explorer_block_configure($delta = '', $settings = array()) {
+  $settings += array(
+    'book_explorer_book_mode' => 'all pages',
+  );
   $options = array(
     'all pages' => t('Show block on all pages'),
     'book pages' => t('Show block only on book pages'),
   );
-  $form['book_explorer_block_mode'] = array(
+  $form['book_explorer_book_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Book navigation block display'),
     '#options' => $options,
-    '#default_value' => variable_get('book_explorer_block_mode', 'all pages'),
-    '#description' => t("If <em>Show block on all pages</em> is selected, the block will contain the automatically generated menus for all of the site's books. If <em>Show block only on book pages</em> is selected, the block will contain only the one menu corresponding to the current page's book. In this case, if the current page is not in a book, no block will be displayed. The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
+    '#default_value' => $settings['book_explorer_book_mode'],
+    '#description' => t("The <em>Page specific visibility settings</em> or other visibility settings can be used in addition to selectively display this block."),
     );
+    $form['book_explorer_book_mode']['all pages']['#description'] = t("The block will contain the automatically generated menus for all of the site's books.");
+  $form['book_explorer_book_mode']['book pages']['#description'] = t("The block will contain only the one menu corresponding to the current page's book. If the current page is not in a book, no block will be displayed.");
 
   return $form;
 }
 
 /**
- * Implements hook_block_save().
- */
-function book_explorer_block_save($delta = '', $edit = array()) {
-  $block = array();
-  variable_set('book_explorer_block_mode', $edit['book_explorer_block_mode']);
-}
-
-/**
  * Implements hook_block_view().
  */
-function book_explorer_block_view($delta = '') {
+function book_explorer_block_view($delta = '', $settings = array()) {
   // Only one block
-  return book_explorer_block_book_explorer_view();
-}
-
-function book_explorer_block_book_explorer_view() {
   $block = array();
   $current_bid = 0;
   if ($node = menu_get_object()) {
     $current_bid = empty($node->book['bid']) ? 0 : $node->book['bid'];
   }
 
-  if (variable_get('book_explorer_block_mode', 'all pages') == 'all pages') {
+  if ($settings['book_explorer_book_mode'] == 'all pages') {
     $block['subject'] = t('Book navigation');
     $book_menus = array();
-    $pseudo_tree = array(0 => array('below' => FALSE));
     foreach (book_get_books() as $book_id => $book) {
       if ($book['bid'] == $current_bid) {
         // If the current page is a node associated with a book, the menu
@@ -87,13 +78,13 @@ function book_explorer_block_book_explorer_view() {
     $title = $select->execute()->fetchField();
     // Only show the block if the user has view access for the top-level node.
     if ($title) {
-      $tree = menu_tree_all_data($node->book['menu_name'] /*, $node->book */);
+      $tree = menu_tree_all_data($node->book['menu_name']);
       // There should only be one element at the top level.
       $data = array_shift($tree);
-      $block['subject'] = theme('book_title_link', array('link' => $data['link']));
+      $block['subject'] = l($data['link']['link_title'], $data['link']['link_path'], array('attributes' => array('class' => array('book-title'))));
       $block['content'] = ($data['below']) ? menu_tree_output($data['below']) : '';
     }
-  }  
+  }
 
   if (!empty($block['content'])) {
     // Move block content down one level so we can wrap a div around it
@@ -104,9 +95,9 @@ function book_explorer_block_book_explorer_view() {
     );
 
     // Attach css and js which implements the 'explorer' behaviour
-    $dir = drupal_get_path('module', 'book_explorer');
-    $block['content']['build']['#attached']['css'] = array($dir . '/book_explorer.css');      
-    $block['content']['build']['#attached']['js'] = array($dir . '/book_explorer.js');
+    $dir = backdrop_get_path('module', 'book_explorer');
+    $block['content']['build']['#attached']['css'] = array($dir . '/css/book_explorer.css');
+    $block['content']['build']['#attached']['js'] = array($dir . '/js/book_explorer.js');
   }
   return $block;
 }

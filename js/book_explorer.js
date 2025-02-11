@@ -1,6 +1,6 @@
 (function ($) {
 
-Drupal.behaviors.book_explorer = {
+Backdrop.behaviors.book_explorer = {
   attach: function() {
     function selector_activate(control) {
       $(control.menu).show();
@@ -10,16 +10,16 @@ Drupal.behaviors.book_explorer = {
 
     function selector_deactivate(control) {
       $('ul', control.list_item).hide();
-      $('.book-explorer-toggle', control.list_item).each(function () { 
-        this.expanded = false; 
+      $('.book-explorer-toggle', control.list_item).each(function () {
+        this.expanded = false;
       }).removeClass('book-explorer-expanded').addClass('book-explorer-collapsed');
       $(control).removeClass('book-explorer-expanded').addClass('book-explorer-collapsed');
       control.expanded = false;
     }
-    
+
     $('.book-explorer').once().each(function () {
       $('.expanded', this).each(function () {
-        var list_item = this;      
+        var list_item = this;
         $('<a href="#" class="book-explorer-toggle">&nbsp;</a>').insertBefore(this).each(function () {
           this.list_item = list_item;
           if ($('a.active', list_item).length) {
